@@ -19,7 +19,7 @@ The first scene in my visualization shows how CO2 emissions have risen across th
 
 
 # Annotations
-My annotations across the slides are in a sans-serif font. The annotations will change when the reader mouses over a new data point, displaying a new tooltip. My tooltips all have the same opacity level and color, slightly offset from the cursor in order to not obscure the visualization. Rather than using 100% opacity, I used 85% so that the next datapoints will still be somewhat visible behind the tooltip. The charts are labeled with titles, axes titles, axis labels in the same location and format across the slides.
+My annotations across the slides are in a sans-serif font. The annotations will change when the reader mouses over a new data point, displaying a new tooltip. My tooltips all have the same opacity level and color, slightly offset from the cursor in order to not obscure the visualization. Rather than using 100% opacity, I used 85% so that the next datapoints will still be somewhat visible behind the tooltip. The charts are labeled with titles, axes titles, axis labels in the same location and format across the slides. Additionally, I provided a short description for the main purpose of the chart, below each of them. This annotation helps the user orient themselves, and understand the message I am trying to convey.
 
 
 # Parameters
