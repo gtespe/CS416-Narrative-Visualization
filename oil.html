@@ -18,14 +18,6 @@
 </head>
 <body>
 <h1> Crude Oil Production over Time</h1>
-<div id="buttonsdiv" style="width: 100%; max-width: 1300px; margin-left: auto; margin-right: auto;">
-   <div style="float:left; width: 80%">
-       <button onclick="location.href='/CS416-Narrative-Visualization/emissions.html'" id="prevpage">&lt CO2 Emissions</button>
-   </div>
-   <div style="float:right;">
-       <button onclick="location.href='/CS416-Narrative-Visualization/netzero.html'" id="nextPage">Net Zero Targets &gt</button>
-   </div>
-</div>
 <div id="linechart" style="clear:both; text-align: center;"></div>
 <script>
 //dimensions
@@ -143,5 +135,13 @@ d3.csv("crude_oil.csv").then(function(data) {
 </script>
 
 <p> Yet countries continue drilling for more and more oil </p>
+<div id="buttonsdiv" style="width: 100%; max-width: 1300px; margin-left: auto; margin-right: auto;">
+   <div style="float:left; width: 80%">
+       <button onclick="location.href='/CS416-Narrative-Visualization/emissions.html'" id="prevpage">&lt CO2 Emissions</button>
+   </div>
+   <div style="float:right;">
+       <button onclick="location.href='/CS416-Narrative-Visualization/netzero.html'" id="nextPage">Net Zero Targets &gt</button>
+   </div>
+</div>
 </body>
 </html>
