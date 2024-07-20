@@ -1,0 +1,3 @@
+https://www.kaggle.com/datasets/ulrikthygepedersen/co2-emissions-by-country
+https://www.kaggle.com/datasets/caesarmario/oecd-data-crude-oil-production?resource=download
+https://ourworldindata.org/grapher/net-zero-target-set

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<head>
+    <title>CO2 Emissions by Region</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+    html * { font-family: Arial, sans-serif; }
+    h1 { text-align:center; }
+    p { text-align:center; }
+    button {
+      text-align: center;
+      font-size: 20px;
+      background-color: #90989F;
+      color: white;
+      padding: 10px 20px;
+      display: inline-block;
+    }
+    </style>
+</head>
+<body>
+<h1> CO2 Emissions by Region </h1>
+<div id="buttonsdiv" style="width: 100%; max-width: 1300px; margin-left: auto; margin-right: auto;">
+   <!-- <div style="float:left; width: 80%"> -->
+   <!--     <button id="prevPage">&lt Prev Page</button> -->
+   <!-- </div> -->
+   <div style="float:right;">
+       <button onclick="location.href='/oil.html'" id="nextPage">Crude Oil &gt</button>
+   </div>
+</div>
+<div id="barchart" style="clear:both; text-align: center;"></div>
+<script>
+//dimensions
+const margin = {top: 20, right: 30, bottom: 40, left: 87};
+const totalheight = 500;
+const totalwidth = 1000;
+const height = totalheight - margin.bottom - margin.top;
+const width = totalwidth - margin.right - margin.left;
+
+const svg = d3.select("#barchart")
+    .append("svg")
+    .attr("width", width + margin.right + margin.left)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate("+margin.left+","+margin.top+")");
+
+// load csv
+d3.csv("co2_emissions.csv").then(function(data) {
+
+    const years = Array.from(new Set(data.map(d => d.year))).sort();
+    const regions = Array.from(new Set(data.map(d => d.region)));
+
+    //pivot years and stack emissions
+    const nestedData = d3.group(data, d => d.year);
+    const stackData = years.map(year => {
+        const yearData = nestedData.get(year) || [];
+        const obj = {year: year};
+        regions.forEach(region => {
+            const regionData = yearData.find(d => d.region === region);
+            obj[region] = regionData ? regionData.emissions: 0;
+        });
+        return obj;
+    });
+
+    // stack the data
+    const stackedData = d3.stack().keys(regions)(stackData);
+
+    //scaling
+    const x = d3.scaleBand().domain(years).range([0, width]).padding(0.1);
+    const y = d3.scaleLinear().domain([0, 27000000]).range([height, 0]);
+    const color = d3.scaleOrdinal()
+        .domain(regions)
+        .range(d3.schemeTableau10); //array of 10 colors
+
+    const tooltip = d3.select("#barchart")
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("padding", "10px")
+        .style("position", "absolute");
+
+    let showDetails = function(event, d) {
+        var year = d.data.year;
+        var amount = d[1] - d[0];
+        tooltip.html("year: " + year + "<br>" +  Math.trunc(amount) + " Kt CO2")
+               .style("opacity", 0.85)
+               .style("left", (event.x+20)+ "px")
+               .style("top", (event.y) + "px");
+    }
+
+    let hideDetails = function(d) {
+        tooltip.style("opacity",0);
+    }
+
+    //bars
+    svg.selectAll("g.bar")
+        .data(stackedData)
+        .join("g")
+        .attr("class","bar")
+        .attr("fill", d => color(d.key))
+        .selectAll("rect")
+        .data(d => d)
+        .join("rect")
+        .attr("x", d => x(d.data.year))
+        .attr("y", d => y(d[1]))
+        .attr("height", d => y(d[0]) - y(d[1]))
+        .attr("width", x.bandwidth())
+        .on("mouseover", showDetails) 
+        .on("mouseout", hideDetails);  
+
+    //add x axis for years
+    svg.append("g").attr("transform", "translate(0,"+height+")")
+        .call(d3.axisBottom(x).tickFormat((d,i) => i %4 === 0 ? d : '')); 
+            // ^^^ make every 4th label visible
+    svg.append("g").call(d3.axisLeft(y)); // y axis for emissions
+
+    //axis titles
+    svg.append("text")  // x axis title
+        .attr("x", width/2)
+        .attr("y", totalheight-20)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text("Year");
+    svg.append("text")   // y aaxis title
+        .attr("transform", "rotate(-90)")
+        .attr("x", 0-height/2) //backwards for transform 
+        .attr("y", 0-margin.left)
+        .attr("dy", "1em")
+        .style("font-weight","bold")
+        .style("text-anchor", "middle")
+        .text("CO2 Emissions in Kilotons");
+
+    const legend = svg.selectAll(".legend").data(regions).enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", (d, i) => "translate(0,"+(i*20)+")");
+    legend.append("rect").attr("x", 20).attr("width", 20)
+        .attr("height", 15)
+        .style("fill", color);
+    legend.append("text").attr("x", 41).attr("y", 8)
+        //.attr("dy", ".5em")
+        .attr("dy", ".35em")
+        //.style("text-anchor", "end")
+        .text(d => d);
+});
+</script>
+
+<p> CO2 emissions have continually reached new highs across the globe. </p>
+</body>
+</html>

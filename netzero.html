@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<head>
+    <title>Net-Zero Emissions Targets</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+    html * { font-family: Arial, sans-serif; }
+    h1 { text-align:center; }
+    p { text-align:center; }
+    button {
+      text-align: center;
+      font-size: 20px;
+      background-color: #90989F;
+      color: white;
+      padding: 10px 20px;
+      display: inline-block;
+    }
+    </style>
+</head>
+<body>
+<h1>Net-Zero Emissions Targets</h1>
+<div id="buttonsdiv" style="width: 100%; max-width: 1300px; margin-left: auto; margin-right: auto;">
+   <div style="float:left;">
+       <button onclick="location.href='/oil.html'" id="prevPage">&lt Crude Oil</button>
+   </div>
+   <!-- <div style="float:right;"> -->
+   <!--     <button onclick="location.href='/oil.html'" id="nextPage">Crude Oil &gt</button> -->
+   <!-- </div> -->
+</div>
+<div id="barchart" style="clear:both; text-align: center;"></div>
+<script>
+//dimensions
+const margin = {top: 20, right: 30, bottom: 40, left: 87};
+const totalheight = 500;
+const totalwidth = 1000;
+const height = totalheight - margin.bottom - margin.top;
+const width = totalwidth - margin.right - margin.left;
+
+const svg = d3.select("#barchart")
+    .append("svg")
+    .attr("width", width + margin.right + margin.left)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate("+margin.left+","+margin.top+")");
+
+
+const data = [
+    { country: "USA", year: 2050 },
+    { country: "Canada", year: 2050 },
+    { country: "Saudi Arabia", year: 2060 },
+    { country: "China", year: 2060 },
+    { country: "Russia", year: 2060 }
+];
+
+//scales
+const x = d3.scaleLinear().domain([2020, 2065]).range([0, width]);
+const y = d3.scaleBand().domain(data.map(d => d.country)).range([0, height]).padding(0.4);
+const color = d3.scaleOrdinal(d3.schemeTableau10);
+
+const tooltip = d3.select("#barchart")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("background-color", "white")
+    .style("position", "absolute")
+    .style("padding", "10px");
+
+let showDetails = function(event, d) {
+    console.log(d);
+    tooltip.html(d.country + " aims to reach net zero emissions by " + d.year)
+           .style("opacity", 0.85)
+           .style("left", (event.x+20)+ "px")
+           .style("top", (event.y) + "px");
+}
+
+let hideDetails = function(d) { tooltip.style("opacity",0); }
+
+//add bars
+svg.selectAll(".bar")
+    .data(data)
+    .join("rect")
+    .attr("fill", d => color(d.country))
+    .attr("x", 0)
+    .attr("y", d => y(d.country))
+    .attr("height", y.bandwidth())
+    .attr("width", d => x(d.year) - x(2020))
+    .on("mouseover", showDetails)
+    .on("mouseleave", hideDetails);
+
+//add xaxis
+svg.append("g")
+    .attr("transform", "translate(0,"+height+")")
+    .call(d3.axisBottom(x).tickFormat(d3.format("d")))
+    .selectAll("text")
+    .attr("dx", "1em")
+    .style("text-anchor", "end");
+//country names are kenough
+svg.append("g").call(d3.axisLeft(y));
+
+//xaxis title
+svg.append("text")
+    .attr("x", width/2)
+    .attr("y",totalheight-25)
+    .style("text-anchor", "middle")
+    .style("font-weight", "bold")
+    .text("Target Year");
+
+</script>
+
+<p> Will countries be able to reach their Net-Zero emissions targets?</p>
+</body>
+</html>

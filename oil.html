@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<head>
+    <title>Crude Oil Production over Time</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+    html * { font-family: Arial, sans-serif; }
+    h1 { text-align:center; }
+    p { text-align:center; }
+    button {
+      text-align: center;
+      font-size: 20px;
+      background-color: #90989F;
+      color: white;
+      padding: 10px 20px;
+      display: inline-block;
+    }
+    </style>
+</head>
+<body>
+<h1> Crude Oil Production over Time</h1>
+<div id="buttonsdiv" style="width: 100%; max-width: 1300px; margin-left: auto; margin-right: auto;">
+   <div style="float:left; width: 80%">
+       <button onclick="location.href='/emissions.html'" id="prevpage">&lt CO2 Emissions</button>
+   </div>
+   <div style="float:right;">
+       <button onclick="location.href='/netzero.html'" id="nextPage">Net Zero Targets &gt</button>
+   </div>
+</div>
+<div id="linechart" style="clear:both; text-align: center;"></div>
+<script>
+//dimensions
+const margin = {top: 20, right: 30, bottom: 40, left: 87};
+const totalheight = 500;
+const totalwidth = 1000;
+const height = totalheight - margin.bottom - margin.top;
+const width = totalwidth - margin.right - margin.left;
+
+const svg = d3.select("#linechart")
+    .append("svg")
+    .attr("width", width + margin.right + margin.left)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate("+margin.left+","+margin.top+")");
+
+// load csv
+d3.csv("crude_oil.csv").then(function(data) {
+
+    const years = Array.from(new Set(data.map(d => d.year))).sort();
+    const countries = Array.from(new Set(data.map(d => d.country)));
+
+     //scales
+    const x = d3.scaleLinear()
+        .domain(d3.extent(data, d => d.year))
+        .range([0, width]);
+
+    const y = d3.scaleLinear()
+        .domain([0, 550000])
+        .range([height, 0]);
+
+    const color = d3.scaleOrdinal(d3.schemeTableau10);
+
+    
+    const tooltip = d3.select("#linechart")
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("padding", "10px")
+        .style("position", "absolute");
+    
+    let showDetails = function(event, d) {
+        console.log(d)
+        var year = d.year;
+        var amount = d.oil;
+        tooltip.html("Year: " + year + "<br>Oil: " +  Math.trunc(amount) + " TTOE")
+               .style("opacity", 0.85)
+               .style("left", (event.x+20)+ "px")
+               .style("top", (event.y) + "px");
+    }
+    
+    let hideDetails = function(d) {
+        tooltip.style("opacity",0);
+    }
+
+    //draw lines
+    const line = d3.line()
+        .x(d => x(d.year))
+        .y(d => y(d.oil));
+    countries.forEach(country => {
+        let c = data.filter(d => d.country === country);
+        svg.append("path")
+            .datum(c)
+            .attr("d", line)
+            .style("fill", "none")
+            .style("stroke-width", 3)
+            .style("stroke", color(country))
+
+        //circles for data points + mouseover
+        svg.selectAll()
+            .data(c)
+            .enter()
+            .append("circle")
+            .attr("cx", d => x(d.year))
+            .attr("cy", d => y(d.oil))
+            .attr("r", 5)
+            .style("fill", color(country))
+            .on("mouseover", showDetails)
+            .on("mouseleave", hideDetails);
+    });
+
+
+    //add x axis for years
+    svg.append("g").attr("transform", "translate(0,"+height+")")
+        .call(d3.axisBottom(x).tickFormat((d,i) => i % 2 === 0 ? d : '').ticks(25)); 
+    svg.append("g").call(d3.axisLeft(y)); // y axis for oil
+
+    //axis titles
+    svg.append("text")  // x axis title
+        .attr("x", width/2)
+        .attr("y", totalheight-20)
+        .style("text-anchor", "middle")
+        .style("font-weight", "bold")
+        .text("Year");
+    svg.append("text")   // y aaxis title
+        .attr("transform", "rotate(-90)")
+        .attr("x", 0-height/2) //backwards for transform 
+        .attr("y", 0-margin.left)
+        .attr("dy", "1em")
+        .style("font-weight", "bold")
+        .style("text-anchor", "middle")
+        .text("Crude Oil Extracted in Thousands of Tons");
+
+    const legend = svg.selectAll(".legend").data(countries).enter().append("g")
+        .attr("class", "legend")
+        .attr("transform", (d, i) => "translate(0,"+(i*20)+")");
+    legend.append("rect").attr("x", 20).attr("width", 20)
+        .attr("height", 15)
+        .style("fill", color);
+    legend.append("text").attr("x", 41).attr("y", 8)
+        .attr("dy", ".35em")
+        .text(d => d);
+});
+</script>
+
+<p> Yet countries continue drilling for more and more oil </p>
+</body>
+</html>
